@@ -1,6 +1,6 @@
-**[English](README.md)** | **[日本語](README.ja.md)**
-
 *このプロジェクトは 42 カリキュラムの一環として kaztakam, monoda により作成されました。*
+
+**[English](README.md)** | **[日本語](README.ja.md)**
 
 ## 概要
 
