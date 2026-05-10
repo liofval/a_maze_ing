@@ -8,6 +8,7 @@ to the Recursive Backtracker.
 from __future__ import annotations
 
 import random
+from collections.abc import Generator
 
 from mazegen.algorithms.base import MazeAlgorithm
 from mazegen.maze import ALL_DIRECTIONS, DIRECTION_DELTA, Maze
@@ -52,16 +53,10 @@ class KruskalAlgorithm(MazeAlgorithm):
     4. Stop when all cells are in one connected component.
     """
 
-    def generate(self, maze: Maze, rng: random.Random) -> None:
-        """Carve a perfect maze using randomized Kruskal's.
-
-        Parameters
-        ----------
-        maze : Maze
-            Fully-walled maze to carve. Modified in place.
-        rng : random.Random
-            Seeded RNG for reproducible results.
-        """
+    def _run(
+        self, maze: Maze, rng: random.Random
+    ) -> Generator[tuple[int, int], None, None]:
+        """Core Kruskal logic as a generator, yielding each carved cell."""
         uf = _UnionFind(maze.width * maze.height)
 
         frozen = maze.pattern_cells
@@ -88,3 +83,15 @@ class KruskalAlgorithm(MazeAlgorithm):
             if uf.union(idx1, idx2):
                 from mazegen.maze import Direction
                 maze.remove_wall(x1, y1, Direction(d_int))
+                yield (x2, y2)
+
+    def generate(self, maze: Maze, rng: random.Random) -> None:
+        """Carve a perfect maze using randomized Kruskal's."""
+        for _ in self._run(maze, rng):
+            pass
+
+    def generate_steps(
+        self, maze: Maze, rng: random.Random
+    ) -> Generator[tuple[int, int], None, None]:
+        """Carve a maze step by step, yielding each carved cell."""
+        yield from self._run(maze, rng)

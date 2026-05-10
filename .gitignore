@@ -5,8 +5,9 @@ dist/
 build/
 .mypy_cache/
 .pytest_cache/
-*.whl
-*.tar.gz
+# mazegen package at root is tracked (required by subject)
+# dist/ built packages are ignored
+
 maze.txt
 .venv/
 venv/

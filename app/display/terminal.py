@@ -7,6 +7,10 @@ and the '42' pattern are color-coded.
 
 from __future__ import annotations
 
+import sys
+import time
+from collections.abc import Generator
+
 from mazegen.maze import DIRECTION_DELTA, Direction, Maze
 from app.display.base import MazeDisplay
 from app.display.colors import ColorScheme, SCHEMES
@@ -60,6 +64,71 @@ class TerminalDisplay(MazeDisplay):
         solution : list[Direction] | None
             The solution path directions.
         """
+        print(self._build_grid_string(maze, show_path, solution))
+
+
+    def render_animated(
+        self,
+        steps: Generator[tuple[Maze, int, int], None, None],
+        delay: float = 0.03,
+    ) -> Maze:
+        """Render maze generation as an animation.
+
+        Parameters
+        ----------
+        steps : Generator[tuple[Maze, int, int], None, None]
+            Generator from MazeGenerator.generate_animated().
+        delay : float
+            Seconds between frames.
+
+        Returns
+        -------
+        Maze
+            The completed maze.
+        """
+        maze = None
+        rows = 0
+
+        for maze, cx, cy in steps:
+            if rows > 0:
+                # Move cursor up to overwrite previous frame
+                sys.stdout.write(f"\033[{rows}A")
+
+            output = self._build_grid_string(maze, highlight=(cx, cy))
+            rows = output.count("\n") + 1
+            sys.stdout.write(output + "\n")
+            sys.stdout.flush()
+            time.sleep(delay)
+
+        # Final clean render without highlight
+        if maze is not None:
+            sys.stdout.write(f"\033[{rows}A")
+            output = self._build_grid_string(maze)
+            sys.stdout.write(output + "\n")
+            sys.stdout.flush()
+
+        return maze
+
+    def _build_grid_string(
+        self,
+        maze: Maze,
+        show_path: bool = False,
+        solution: list[Direction] | None = None,
+        highlight: tuple[int, int] | None = None,
+    ) -> str:
+        """Build the maze grid as a string.
+
+        Parameters
+        ----------
+        maze : Maze
+            The maze to render.
+        show_path : bool
+            Whether to show the solution path.
+        solution : list[Direction] | None
+            The solution path directions.
+        highlight : tuple[int, int] | None
+            Cell to highlight (for animation).
+        """
         path_cells = _compute_path_cells(maze, solution) if (
             show_path and solution
         ) else set()
@@ -81,11 +150,9 @@ class TerminalDisplay(MazeDisplay):
         for y in range(maze.height):
             for x in range(maze.width):
                 gx = 2 * x + 1
-                # North wall
                 if maze.has_wall(x, y, Direction.N):
                     gy_n = 2 * y
                     grid[gy_n][gx] = cs.wall + "-" + cs.reset
-                # South wall
                 if maze.has_wall(x, y, Direction.S):
                     gy_s = 2 * y + 2
                     grid[gy_s][gx] = cs.wall + "-" + cs.reset
@@ -94,11 +161,9 @@ class TerminalDisplay(MazeDisplay):
         for y in range(maze.height):
             for x in range(maze.width):
                 gy = 2 * y + 1
-                # West wall
                 if maze.has_wall(x, y, Direction.W):
                     gx_w = 2 * x
                     grid[gy][gx_w] = cs.wall + "|" + cs.reset
-                # East wall
                 if maze.has_wall(x, y, Direction.E):
                     gx_e = 2 * x + 2
                     grid[gy][gx_e] = cs.wall + "|" + cs.reset
@@ -109,7 +174,9 @@ class TerminalDisplay(MazeDisplay):
                 gx = 2 * x + 1
                 gy = 2 * y + 1
 
-                if (x, y) == maze.entry:
+                if highlight and (x, y) == highlight:
+                    grid[gy][gx] = cs.path + "@" + cs.reset
+                elif (x, y) == maze.entry:
                     grid[gy][gx] = cs.entry + "S" + cs.reset
                 elif (x, y) == maze.exit_:
                     grid[gy][gx] = cs.exit_ + "E" + cs.reset
@@ -120,8 +187,7 @@ class TerminalDisplay(MazeDisplay):
                 else:
                     grid[gy][gx] = " "
 
-        output = "\n".join("".join(row) for row in grid)
-        print(output)
+        return "\n".join("".join(row) for row in grid)
 
 
 def _compute_path_cells(

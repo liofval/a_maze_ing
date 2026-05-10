@@ -14,6 +14,7 @@ A-Maze-ing is a maze generator written in Python that creates random mazes with 
 - BFS shortest path solver
 - ASCII terminal visualization with ANSI colors
 - Interactive controls (regenerate, toggle path, change colors)
+- Step-by-step maze generation animation in the terminal
 - Reusable `mazegen` library installable via pip
 
 ## Instructions
@@ -183,6 +184,15 @@ if path:
         print(step.to_char(), end="")
 ```
 
+### Animated Generation
+
+```python
+# Step-by-step generation using a generator
+for maze, x, y in gen.generate_animated():
+    print(f"Carved cell ({x}, {y})")
+# maze is now fully generated
+```
+
 ### Extending with a New Algorithm
 
 ```python
@@ -209,7 +219,7 @@ a_maze_ing.py          Entry point
 ├── app/               Application layer
 │   ├── config.py      Config parser (KEY=VALUE)
 │   ├── formatter.py   Hex output writer
-│   ├── controller.py  Interactive menu loop
+│   ├── controller.py  Interactive menu loop (with animation)
 │   └── display/       Visualization
 │       ├── base.py    MazeDisplay ABC
 │       ├── terminal.py ASCII renderer
@@ -236,6 +246,7 @@ a_maze_ing.py          Entry point
 | `mazegen/` separated from `app/` | Library has no app dependencies, installable standalone |
 | Iterative DFS (not recursive) | Python recursion limit is 1000; a 100x100 maze has 10,000 cells |
 | 42 pattern stamped before generation | Algorithm routes around frozen cells naturally |
+| Generator-based animation (`yield`) | Algorithms expose intermediate states without coupling to display logic |
 
 ## Documentation
 
@@ -266,5 +277,6 @@ AI (Claude) was used for:
 - Initial project architecture design and file structure planning
 - Code generation for all modules, with review and corrections applied
 - Translation of the project subject PDF to Japanese
+- Animation feature implementation (generator pattern, ANSI terminal control)
 
 All generated code was reviewed, tested, and validated with `flake8`, `mypy --strict`, and `pytest`.

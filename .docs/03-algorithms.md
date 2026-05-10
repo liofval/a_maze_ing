@@ -214,6 +214,66 @@ graph LR
 | 実装の複雑さ | 低い | 中（Union-Find が必要） |
 | 学習ポイント | DFS、スタック | 素集合、グラフ理論 |
 
+## アニメーション生成（ジェネレータパターン）
+
+各アルゴリズムは `generate()` に加えて `generate_steps()` を提供します。これは Python の**ジェネレータ**（`yield`）を使い、壁を1つ除去するたびに中間状態を返します。
+
+```mermaid
+sequenceDiagram
+    participant App as Controller
+    participant Gen as MazeGenerator
+    participant Algo as Algorithm
+    participant Disp as TerminalDisplay
+
+    App->>Gen: generate_animated()
+    loop 壁を除去するたび
+        Gen->>Algo: generate_steps() — next()
+        Algo-->>Gen: yield (x, y)
+        Gen-->>App: yield (maze, x, y)
+        App->>Disp: ANSIエスケープで上書き描画
+    end
+```
+
+### なぜジェネレータを使うのか？
+
+```python
+# NG: コールバック方式（表示ロジックがアルゴリズムに侵入）
+def generate(self, maze, rng, on_step=None):
+    maze.remove_wall(cx, cy, direction)
+    if on_step:
+        on_step(nx, ny)  # アルゴリズムが表示を知っている
+
+# OK: ジェネレータ方式（アルゴリズムは表示を知らない）
+def generate_steps(self, maze, rng):
+    maze.remove_wall(cx, cy, direction)
+    yield (nx, ny)  # 呼び出し側が使い方を決める
+```
+
+ジェネレータにより、アルゴリズムと表示の**関心事が分離**されます。`generate_steps()` の戻り値は `for` ループで消費するだけでなく、速度制御やフィルタリングも自由にできます。
+
+### コード構造
+
+各アルゴリズムのコアロジックは `_run()` ジェネレータに集約されています:
+
+```python
+class RecursiveBacktracker(MazeAlgorithm):
+    def _run(self, maze, rng):
+        # ... DFS ロジック ...
+        maze.remove_wall(cx, cy, direction)
+        yield (nx, ny)  # 掘ったセルを通知
+
+    def generate(self, maze, rng):
+        for _ in self._run(maze, rng):  # 全ステップを消費
+            pass
+
+    def generate_steps(self, maze, rng):
+        yield from self._run(maze, rng)  # ステップを透過的に転送
+```
+
+`generate()` と `generate_steps()` はどちらも `_run()` を使うので、ロジックの重複がありません。
+
+---
+
 ## 不完全迷路の生成
 
 `PERFECT=False` の場合、完全迷路を生成した後に**追加で壁を除去**してループを作ります。

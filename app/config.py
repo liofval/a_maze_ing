@@ -100,6 +100,18 @@ def parse_config(path: str) -> MazeConfig:
     if not output_file:
         raise ValueError("OUTPUT_FILE must not be empty")
 
+    MAX_SIZE = 1000
+    if width > MAX_SIZE or height > MAX_SIZE:
+        raise ValueError(
+            f"WIDTH and HEIGHT must be at most {MAX_SIZE}, "
+            f"got: {width}x{height}"
+        )
+    if width == 1 and height == 1:
+        raise ValueError(
+            "Maze too small: a 1x1 maze cannot have distinct "
+            "entry and exit"
+        )
+
     _validate_bounds(width, height, entry, "ENTRY")
     _validate_bounds(width, height, exit_, "EXIT")
 

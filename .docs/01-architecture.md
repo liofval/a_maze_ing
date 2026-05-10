@@ -108,8 +108,16 @@ sequenceDiagram
     Disp-->>User: 迷路が表示される
 
     loop インタラクティブループ
-        User->>Ctrl: 1: 再生成 / 2: パス表示 / 3: 色変更 / 4: 終了
-        Ctrl->>Disp: render(maze)
+        User->>Ctrl: 1: 再生成 / 2: アニメーション再生成 / 3: パス表示 / 4: 色変更 / 5: 終了
+        alt アニメーション再生成
+            Ctrl->>Gen: generate_animated()
+            loop 各ステップ
+                Gen-->>Ctrl: (maze, x, y)
+                Ctrl->>Disp: render_animated() — ANSIで上書き描画
+            end
+        else 通常操作
+            Ctrl->>Disp: render(maze)
+        end
         Disp-->>User: 更新された表示
     end
 ```

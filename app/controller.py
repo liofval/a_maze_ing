@@ -41,7 +41,7 @@ class MazeController:
         while True:
             self._print_menu()
             try:
-                choice = input("Choice? (1-4): ").strip()
+                choice = input("Choice? (1-5): ").strip()
             except (EOFError, KeyboardInterrupt):
                 print()
                 break
@@ -49,13 +49,15 @@ class MazeController:
             if choice == "1":
                 self._regenerate()
             elif choice == "2":
-                self._toggle_path()
+                self._regenerate_animated()
             elif choice == "3":
-                self._change_colors()
+                self._toggle_path()
             elif choice == "4":
+                self._change_colors()
+            elif choice == "5":
                 break
             else:
-                print("Invalid choice. Please enter 1-4.")
+                print("Invalid choice. Please enter 1-5.")
 
     def _render(self) -> None:
         """Render the current maze state."""
@@ -72,6 +74,13 @@ class MazeController:
         self._show_path = False
         self._render()
 
+    def _regenerate_animated(self) -> None:
+        """Generate a new maze with step-by-step animation."""
+        steps = self._generator.generate_animated()
+        self._maze = self._display.render_animated(steps)
+        self._solution = self._generator.solve()
+        self._show_path = False
+
     def _toggle_path(self) -> None:
         """Toggle the solution path display."""
         self._show_path = not self._show_path
@@ -87,6 +96,7 @@ class MazeController:
         """Print the interactive menu."""
         print("\n=== A-Maze-ing ===")
         print("1. Re-generate a new maze")
-        print("2. Show/Hide path from entry to exit")
-        print("3. Rotate maze colors")
-        print("4. Quit")
+        print("2. Re-generate with animation")
+        print("3. Show/Hide path from entry to exit")
+        print("4. Rotate maze colors")
+        print("5. Quit")

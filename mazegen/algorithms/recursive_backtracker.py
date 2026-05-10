@@ -7,6 +7,7 @@ instead of Python recursion to avoid stack overflow on large mazes.
 from __future__ import annotations
 
 import random
+from collections.abc import Generator
 
 from mazegen.algorithms.base import MazeAlgorithm
 from mazegen.maze import Maze
@@ -25,16 +26,10 @@ class RecursiveBacktracker(MazeAlgorithm):
        d. If none: pop (backtrack).
     """
 
-    def generate(self, maze: Maze, rng: random.Random) -> None:
-        """Carve a perfect maze using iterative DFS.
-
-        Parameters
-        ----------
-        maze : Maze
-            Fully-walled maze to carve. Modified in place.
-        rng : random.Random
-            Seeded RNG for reproducible results.
-        """
+    def _run(
+        self, maze: Maze, rng: random.Random
+    ) -> Generator[tuple[int, int], None, None]:
+        """Core DFS logic as a generator, yielding each carved cell."""
         visited: set[tuple[int, int]] = set()
         stack: list[tuple[int, int]] = []
 
@@ -57,5 +52,17 @@ class RecursiveBacktracker(MazeAlgorithm):
                 maze.remove_wall(cx, cy, direction)
                 visited.add((nx, ny))
                 stack.append((nx, ny))
+                yield (nx, ny)
             else:
                 stack.pop()
+
+    def generate(self, maze: Maze, rng: random.Random) -> None:
+        """Carve a perfect maze using iterative DFS."""
+        for _ in self._run(maze, rng):
+            pass
+
+    def generate_steps(
+        self, maze: Maze, rng: random.Random
+    ) -> Generator[tuple[int, int], None, None]:
+        """Carve a maze step by step, yielding each carved cell."""
+        yield from self._run(maze, rng)

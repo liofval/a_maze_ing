@@ -17,19 +17,25 @@ classDiagram
     class MazeAlgorithm {
         <<abstract>>
         +generate(maze, rng)*
+        +generate_steps(maze, rng) Generator
     }
 
     class RecursiveBacktracker {
+        -_run(maze, rng) Generator
         +generate(maze, rng)
+        +generate_steps(maze, rng) Generator
     }
 
     class KruskalAlgorithm {
+        -_run(maze, rng) Generator
         +generate(maze, rng)
+        +generate_steps(maze, rng) Generator
     }
 
     class MazeGenerator {
         -_algorithm_name: str
         +generate() Maze
+        +generate_animated() Generator
     }
 
     MazeAlgorithm <|-- RecursiveBacktracker
@@ -45,26 +51,31 @@ class MazeAlgorithm(ABC):
     @abstractmethod
     def generate(self, maze: Maze, rng: random.Random) -> None: ...
 
+    def generate_steps(self, maze, rng) -> Generator[tuple[int, int], None, None]:
+        self.generate(maze, rng)  # デフォルト: 一括生成にフォールバック
+        return; yield
+
 # recursive_backtracker.py — 具体的な実装 A
 class RecursiveBacktracker(MazeAlgorithm):
+    def _run(self, maze, rng):    # コアロジック（ジェネレータ）
+        # DFS で通路を掘り、各ステップで yield
     def generate(self, maze, rng):
-        # DFS で通路を掘る
-
-# kruskal.py — 具体的な実装 B
-class KruskalAlgorithm(MazeAlgorithm):
-    def generate(self, maze, rng):
-        # Union-Find で通路を掘る
+        for _ in self._run(maze, rng): pass
+    def generate_steps(self, maze, rng):
+        yield from self._run(maze, rng)
 ```
 
 ### 新アルゴリズムの追加方法
 
 1. `MazeAlgorithm` を継承したクラスを書く
 2. `ALGORITHMS` dict に登録する
+3. アニメーション対応する場合は `generate_steps()` もオーバーライド（任意）
 
 ```python
 # 新しいアルゴリズム
 class PrimAlgorithm(MazeAlgorithm):
     def generate(self, maze, rng): ...
+    # generate_steps() を実装しなくても動作する（一括生成にフォールバック）
 
 # 登録（1行追加するだけ）
 ALGORITHMS["prim"] = PrimAlgorithm
@@ -88,7 +99,7 @@ ALGORITHMS["prim"] = PrimAlgorithm
 graph TB
     subgraph "利用者が見える部分"
         User["ユーザーコード"]
-        Facade["MazeGenerator<br/>generate()<br/>solve()<br/>get_maze()"]
+        Facade["MazeGenerator<br/>generate()<br/>generate_animated()<br/>solve()<br/>get_maze()"]
     end
 
     subgraph "Facade の裏側（利用者は知らなくてよい）"

@@ -115,14 +115,14 @@ def _check_no_large_open_areas(maze: Maze) -> list[str]:
     errors: list[str] = []
     for y in range(maze.height - 2):
         for x in range(maze.width - 2):
-            if _is_3x3_open(maze, x, y):
+            if is_3x3_open(maze, x, y):
                 errors.append(
                     f"3x3 open area detected at ({x},{y})"
                 )
     return errors
 
 
-def _is_3x3_open(maze: Maze, x: int, y: int) -> bool:
+def is_3x3_open(maze: Maze, x: int, y: int) -> bool:
     """Check if the 3x3 block starting at (x, y) has no internal walls."""
     for dy in range(3):
         for dx in range(3):

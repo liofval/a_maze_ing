@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import random
 from abc import ABC, abstractmethod
+from collections.abc import Generator
 
 from mazegen.maze import Maze
 
@@ -30,3 +31,20 @@ class MazeAlgorithm(ABC):
         rng : random.Random
             Seeded RNG for reproducible generation.
         """
+
+    def generate_steps(
+        self, maze: Maze, rng: random.Random
+    ) -> Generator[tuple[int, int], None, None]:
+        """Generate a maze, yielding (x, y) after each wall removal.
+
+        The default implementation falls back to non-animated generation.
+        Subclasses should override this to provide step-by-step output.
+
+        Yields
+        ------
+        tuple[int, int]
+            The (x, y) coordinates of the cell just carved into.
+        """
+        self.generate(maze, rng)
+        return
+        yield  # make this a generator
