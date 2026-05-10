@@ -1,6 +1,6 @@
 **[English](README.md)** | **[日本語](README.ja.md)**
 
-*This project has been created as part of the 42 curriculum by mei.*
+*This project has been created as part of the 42 curriculum by kaztakam monoda.*
 
 ## Description
 
