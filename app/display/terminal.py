@@ -66,7 +66,6 @@ class TerminalDisplay(MazeDisplay):
         """
         print(self._build_grid_string(maze, show_path, solution))
 
-
     def render_animated(
         self,
         steps: Generator[tuple[Maze, int, int], None, None],
@@ -86,7 +85,7 @@ class TerminalDisplay(MazeDisplay):
         Maze
             The completed maze.
         """
-        maze = None
+        maze: Maze | None = None
         rows = 0
 
         for maze, cx, cy in steps:
@@ -107,6 +106,8 @@ class TerminalDisplay(MazeDisplay):
             sys.stdout.write(output + "\n")
             sys.stdout.flush()
 
+        if maze is None:
+            raise RuntimeError("No steps yielded from generator")
         return maze
 
     def _build_grid_string(
