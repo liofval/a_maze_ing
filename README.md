@@ -1,6 +1,6 @@
 **[English](README.md)** | **[日本語](README.ja.md)**
 
-*This project has been created as part of the 42 curriculum by kaztakam monoda.*
+*This project has been created as part of the 42 curriculum by kaztakam,monoda.*
 
 ## Description
 
@@ -262,6 +262,56 @@ Detailed documentation is available in [`.docs/`](.docs/README.md):
 | [42 Pattern](.docs/06-42-pattern.md) | How the "42" stamp is placed |
 | [Solver](.docs/07-solver.md) | BFS shortest path algorithm |
 | [Testing](.docs/08-testing.md) | Test strategy and writing tests |
+
+## Team and Project Management
+
+### Team Roles
+
+| Member | Role |
+|--------|------|
+| kaztakam | Config parser, output formatter, validation logic, testing |
+| monoda | Maze generation algorithms, visual display, animation, project integration |
+
+### Planning and Evolution
+
+**Initial plan:**
+
+1. Define data model (Direction, Cell, Maze)
+2. Implement Recursive Backtracker algorithm
+3. Build config parser and output formatter
+4. Add terminal visualization with interactive menu
+5. Package as reusable `mazegen` library
+
+**How it evolved:**
+
+- Kruskal's algorithm was added as a second generation method to demonstrate extensibility of the Strategy pattern
+- Animation feature was added using Python generators (`yield`), which required refactoring algorithms to expose intermediate steps via `generate_steps()`
+- Input validation was strengthened after testing edge cases (1x1 mazes, oversized mazes, out-of-bounds coordinates)
+
+### What Worked Well
+
+- Separating `mazegen/` (library) from `app/` (application) early made the codebase clean and the packaging straightforward
+- The Strategy pattern made adding Kruskal's trivial — one new file and one dict entry
+- Wall coherence enforced at the `Maze.remove_wall()` level eliminated an entire class of bugs
+- Using `IntFlag` for directions meant hex output required zero conversion logic
+
+### What Could Be Improved
+
+- The terminal renderer uses raw ANSI escape codes; a library like `curses` or `blessed` would be more robust across terminal types
+- Test coverage could be expanded to include more edge cases for imperfect maze generation
+- The animation speed is hardcoded; making it configurable via the config file would improve usability
+
+### Tools Used
+
+| Tool | Purpose |
+|------|---------|
+| Python 3.14 | Development language |
+| flake8 | Linting |
+| mypy (--strict) | Static type checking |
+| pytest | Unit testing |
+| setuptools + build | Package building (.whl, .tar.gz) |
+| Claude (AI) | Architecture design, code generation, documentation |
+| Git + GitHub | Version control and collaboration |
 
 ## Resources
 
